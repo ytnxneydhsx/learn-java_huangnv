@@ -7,9 +7,9 @@ public class Customer {
     protected int visitCount;
     protected LocalDate latestVisitDate;
 
-    public Customer(String name, int visitCount, LocalDate latestVisitDate) {
+    public Customer(String name, LocalDate latestVisitDate) {
         this.name = name;
-        this.visitCount = visitCount;
+        this.visitCount = 0;
         this.latestVisitDate = latestVisitDate;
     }
 
@@ -22,6 +22,9 @@ public class Customer {
     public LocalDate getLatestVisitDate(){
         return this.latestVisitDate;
     }
+    public  void addVisitCount(){
+        this.visitCount++;
+    }
     @Override
     public String toString() {
         return "顾客信息 {" +
@@ -30,5 +33,4 @@ public class Customer {
                 ", 最新到店时间=" + latestVisitDate +
                 '}';
     }
-
 }
