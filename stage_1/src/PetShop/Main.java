@@ -1,4 +1,5 @@
-import PetShop.model.*;
+package PetShop;
+import  PetShop.model.*;
 import java.time.LocalDate;
 
 public class Main {
