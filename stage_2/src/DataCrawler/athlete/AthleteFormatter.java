@@ -1,11 +1,23 @@
-package DataCrawler.athlete;
+package DataCrawler.Athlete;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import common.OutputFormatter;
 
-public class AthleteFormatter {
+public class AthleteFormatter implements OutputFormatter {
+
+
+    public String format(String json,String option)
+    {
+        switch (option) {
+            case "":
+               return  formatAllPlayers(json);
+            default:
+                throw new IllegalArgumentException("未知的格式化选项: " + option);
+        }
+    }
 
     // Format all players for the "players" command.
     public String formatAllPlayers(String json) {

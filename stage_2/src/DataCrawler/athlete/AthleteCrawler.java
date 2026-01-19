@@ -1,4 +1,6 @@
-package DataCrawler.athlete;
+package DataCrawler.Athlete;
+
+import common.DataFetcher;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,19 +13,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class AthleteCrawler {
-
+public class AthleteCrawler implements DataFetcher {
     public static final String ATHLETE_URL =
             "https://api.worldaquatics.com/fina/competitions/3337/athletes?gender=&countryId=";
     public static final String DEFAULT_OUTPUT_PATH = "stage_2/data/athletes.json";
 
-    // Public API: fetch JSON and persist files.
-    // Fetch the athlete list JSON.
-    public String fetchRawJson() throws IOException {
+
+    public String fetch() throws IOException
+    {
         return httpGet(ATHLETE_URL);
+
     }
 
-    // Save raw JSON to disk using UTF-8.
+
     public void saveJsonToFile(String json, String outputPath) throws IOException {
         Path path = Paths.get(outputPath);
         Path parent = path.getParent();
@@ -33,17 +35,6 @@ public class AthleteCrawler {
         Files.write(path, json.getBytes(StandardCharsets.UTF_8));
     }
 
-    // Manual test entry: fetch and save athlete JSON.
-    public static void main(String[] args) {
-        AthleteCrawler crawler = new AthleteCrawler();
-        try {
-            String json = crawler.fetchRawJson();
-            crawler.saveJsonToFile(json, DEFAULT_OUTPUT_PATH);
-            System.out.println("Saved: " + DEFAULT_OUTPUT_PATH);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private String httpGet(String url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();

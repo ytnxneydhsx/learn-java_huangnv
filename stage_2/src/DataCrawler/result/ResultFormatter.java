@@ -1,4 +1,4 @@
-package DataCrawler.result;
+package DataCrawler.Result;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -8,14 +8,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import  common.OutputFormatter;
 
-public class ResultFormatter {
+public class ResultFormatter implements OutputFormatter{
 
     private static final String PHASE_PRELIM = "Preliminaries";
     private static final String PHASE_SEMI = "Semifinals";
     private static final String PHASE_FINAL = "Finals";
 
-    // Format final results for requirement 1.2.
+
+
+    public String format(String json,String option){
+        switch (option){
+            case "detail":
+                return formatDetailedResults(json);
+            case "":
+                return formatFinalResults(json);
+            default:
+                throw new IllegalArgumentException("未知的格式化选项: " + option);
+        }
+    }
+
     public String formatFinalResults(String eventJson) {
         JsonObject root = JsonParser.parseString(eventJson).getAsJsonObject();
         JsonObject finalHeat = findHeatByPhase(root, PHASE_FINAL);

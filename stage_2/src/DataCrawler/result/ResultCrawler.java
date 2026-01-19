@@ -1,5 +1,5 @@
-package DataCrawler.result;
-
+package DataCrawler.Result;
+import  common.DataFetcher;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -15,7 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ResultCrawler {
+public class ResultCrawler implements DataFetcher{
 
     public static final String ResultSumURL =
             "https://api.worldaquatics.com/fina/competitions/3337/events";
@@ -23,15 +23,13 @@ public class ResultCrawler {
             "https://api.worldaquatics.com/fina/events/%s";
     public static final String DEFAULT_OUTPUT_PATH = "stage_2/data/result.json";
 
-    // Public API: fetch JSON by discipline name, and persist files.
-    // Fetch the competition summary JSON (sports + disciplines).
-    public String fetchRawJson() throws IOException {
+    public  String fetch() throws IOException {
         return httpGet(ResultSumURL);
     }
 
     // Fetch event JSON by discipline name (e.g., "Women 1m Springboard").
     public String fetchEventJsonByDisciplineName(String disciplineName) throws IOException {
-        String summaryJson = fetchRawJson();
+        String summaryJson = fetch();
         String disciplineId = getDisciplineIdByName(summaryJson, disciplineName);
         if (disciplineId == null) {
             return null;
