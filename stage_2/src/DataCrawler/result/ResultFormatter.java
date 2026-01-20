@@ -209,8 +209,10 @@ public class ResultFormatter implements OutputFormatter{
     }
 
     private String buildFullName(JsonObject result) {
-        JsonArray competitors = result.getAsJsonArray("Competitors");
-        if (competitors != null && competitors.size() > 0) {
+        JsonElement competitorsElem = result.get("Competitors");
+        if (competitorsElem != null && competitorsElem.isJsonArray()) {
+            JsonArray competitors = competitorsElem.getAsJsonArray();
+            if (competitors.size() > 0) {
             List<NameItem> items = new ArrayList<>();
             for (JsonElement compElem : competitors) {
                 JsonObject comp = compElem.getAsJsonObject();
@@ -240,6 +242,7 @@ public class ResultFormatter implements OutputFormatter{
                 return sb.toString();
             }
         }
+        }
 
         String fullName = getAsString(result, "FullName");
         if (!fullName.isEmpty()) {
@@ -255,8 +258,10 @@ public class ResultFormatter implements OutputFormatter{
         if (!personId.isEmpty()) {
             return personId;
         }
-        JsonArray competitors = result.getAsJsonArray("Competitors");
-        if (competitors != null && competitors.size() > 0) {
+        JsonElement competitorsElem = result.get("Competitors");
+        if (competitorsElem != null && competitorsElem.isJsonArray()) {
+            JsonArray competitors = competitorsElem.getAsJsonArray();
+            if (competitors.size() > 0) {
             List<String> parts = new ArrayList<>();
             for (JsonElement compElem : competitors) {
                 JsonObject comp = compElem.getAsJsonObject();
@@ -286,6 +291,7 @@ public class ResultFormatter implements OutputFormatter{
                 }
                 return sb.toString();
             }
+        }
         }
         String fullName = getAsString(result, "FullName");
         if (!fullName.isEmpty()) {

@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ResultCrawler implements DataFetcher{
 
@@ -35,6 +37,11 @@ public class ResultCrawler implements DataFetcher{
             return null;
         }
         return fetchEventJsonByDisciplineId(disciplineId);
+    }
+
+    public Map<String, String> fetchEventIdMap() throws IOException {
+        String summaryJson = fetch();
+        return parseEventIdMap(summaryJson);
     }
 
     // Save raw JSON to disk using UTF-8.
@@ -65,8 +72,25 @@ public class ResultCrawler implements DataFetcher{
         }
     }
 
-    private String fetchEventJsonByDisciplineId(String disciplineId) throws IOException {
+    public String fetchEventJsonByDisciplineId(String disciplineId) throws IOException {
         return httpGet(String.format(EVENT_DETAIL_URL_TEMPLATE, disciplineId));
+    }
+
+    private Map<String, String> parseEventIdMap(String summaryJson) {
+        Map<String, String> map = new HashMap<>();
+        JsonObject result = JsonParser.parseString(summaryJson).getAsJsonObject();
+        JsonArray sportsArray = result.getAsJsonArray("Sports");
+        for (JsonElement sportElement : sportsArray) {
+            JsonObject sportObj = sportElement.getAsJsonObject();
+            JsonArray disciplineList = sportObj.getAsJsonArray("DisciplineList");
+            for (JsonElement discipline : disciplineList) {
+                JsonObject disciplineObj = discipline.getAsJsonObject();
+                String name = getAsString(disciplineObj, "DisciplineName");
+                String id = getAsString(disciplineObj, "Id");
+                map.put(name, id);
+            }
+        }
+        return map;
     }
 
     private String buildEventOutputPath(String disciplineName) {
