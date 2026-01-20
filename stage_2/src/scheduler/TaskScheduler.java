@@ -1,5 +1,60 @@
 package scheduler;
 
-public class TaskScheduler {
+import DataCrawler.Athlete.AthleteQueryService;
+import DataCrawler.Result.ResultQueryService;
+import common.QueryService;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class TaskScheduler {
+    private final QueryService athleteService = new AthleteQueryService();
+    private final QueryService resultService = new ResultQueryService();
+
+    public void execute(Map<String, TaskGroup> groups, String[] output) {
+        List<Thread> threads = new ArrayList<>();
+        for (TaskGroup group : groups.values()) {
+            Thread thread = new Thread(() -> runGroup(group, output));
+            thread.start();
+            threads.add(thread);
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    private void runGroup(TaskGroup group, String[] output) {
+        String key = group.getName();
+        if ("ATHLETES".equals(key)) {
+            runAthletesGroup(group, output);
+        } else if (key.startsWith("EVENT:")) {
+            runEventGroup(group, output);
+        }
+    }
+
+    private void runAthletesGroup(TaskGroup group, String[] output) {
+        String result = athleteService.query(null, "");
+        for (Task task : group.getTasks()) {
+            writeOutput(output, task.getLine(), result);
+        }
+    }
+
+    private void runEventGroup(TaskGroup group, String[] output) {
+        String key = group.getName();
+        String eventName = key.substring("EVENT:".length()).trim();
+        for (Task task : group.getTasks()) {
+            String result = resultService.query(eventName, task.getOption());
+            writeOutput(output, task.getLine(), result);
+        }
+    }
+
+    private void writeOutput(String[] output, int line, String value) {
+        output[line - 1] = value;
+    }
 }
