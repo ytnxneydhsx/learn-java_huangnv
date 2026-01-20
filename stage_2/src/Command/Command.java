@@ -19,4 +19,8 @@ public abstract class Command {
     public String getRawCommand() {
         return rawCommand;
     }
+
+    public String immediateOutput() {
+        return null;
+    }
 }

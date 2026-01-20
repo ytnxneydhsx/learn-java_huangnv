@@ -15,16 +15,16 @@ public class CommandParser {
     private static final Set<String> VALID_EVENT_NAMES = new HashSet<>();
 
     static {
-        VALID_EVENT_NAMES.add("women 1m springboard");
-        VALID_EVENT_NAMES.add("women 3m springboard");
-        VALID_EVENT_NAMES.add("women 10m platform");
-        VALID_EVENT_NAMES.add("women 3m synchronised");
-        VALID_EVENT_NAMES.add("women 10m synchronised");
-        VALID_EVENT_NAMES.add("men 1m springboard");
-        VALID_EVENT_NAMES.add("men 3m springboard");
-        VALID_EVENT_NAMES.add("men 10m platform");
-        VALID_EVENT_NAMES.add("men 3m synchronised");
-        VALID_EVENT_NAMES.add("men 10m synchronised");
+        VALID_EVENT_NAMES.add("Women 1m Springboard");
+        VALID_EVENT_NAMES.add("Women 3m Springboard");
+        VALID_EVENT_NAMES.add("Women 10m Platform");
+        VALID_EVENT_NAMES.add("Women 3m Synchronised");
+        VALID_EVENT_NAMES.add("Women 10m Synchronised");
+        VALID_EVENT_NAMES.add("Men 1m Springboard");
+        VALID_EVENT_NAMES.add("Men 3m Springboard");
+        VALID_EVENT_NAMES.add("Men 10m Platform");
+        VALID_EVENT_NAMES.add("Men 3m Synchronised");
+        VALID_EVENT_NAMES.add("Men 10m Synchronised");
     }
     // ==========================================
 
@@ -73,7 +73,12 @@ public class CommandParser {
         // 判断命令类型（严格匹配小写）
         if (firstWord.equals("players")) {
             // players 命令
-            return new PlayerCommand(lineNumber, line);
+            if(parts.length==1) {
+                return new PlayerCommand(lineNumber, line);
+            }
+            else{
+                return new ErrorCommand(lineNumber, line);
+            }
 
         } else if (firstWord.equals("result")) {
             // result 命令，需要进一步解析
