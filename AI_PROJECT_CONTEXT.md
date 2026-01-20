@@ -315,7 +315,51 @@ Map<CacheKey, TaskGroup>
 output.txt
 ```
 
----
+#### 多线程执行框架（调度器示意）
+
+**目标**：同一数据源只抓取一次，按原始行号输出，保证并发安全与顺序正确。
+
+**核心数据结构**（示意）：
+```
+Task {
+  line: int
+  key: String          // ATHLETES / EVENT:<eventName>
+  option: String       // "" or "detail"
+}
+```
+
+**分组执行思路**：
+1. CoreModule 先把 Error/N/A 直接写入输出数组。
+2. 对剩余 Task 按 `key` 分组（同 key 代表共享数据源）。
+3. 每个 key 对应一个执行单元（线程或线程池任务）。
+4. 线程内部：
+   - 按 key 判断抓取逻辑：
+     - `ATHLETES` → `AthleteCrawler.fetch()`
+     - `EVENT:<eventName>` → `ResultCrawler.fetchEventJsonByDisciplineName(eventName)`
+   - 对组内每个 Task 使用对应 Formatter：
+     - `option=""` → 简略输出
+     - `option="detail"` → 详细输出
+   - 写回 `outStringArray[line-1]`
+5. 主线程等待所有任务结束后按行号拼接输出。
+
+**并发安全建议**：
+- 任务只写自己的 `line` 位置，且主线程等待所有任务完成后再读取。
+- 如果使用多线程写数组，建议：
+  - `AtomicReferenceArray<String>` 或
+  - 任务返回结果，主线程 `Future.get()` 后写入数组（更简单）。
+
+**示例分组**：
+```
+players
+result women 1m springboard
+result women 1m springboard detail
+players
+```
+分组后：
+- key=ATHLETES: line 1, line 4（只抓一次运动员）
+- key=EVENT:women 1m springboard: line 2, line 3（只抓一次项目结果）
+
+--- 
 
 ## 关键文件快速定位
 
@@ -354,16 +398,204 @@ output.txt
 
 ### 与用户协作原则
 
-- **用户是学习者**：这是用户的作业，AI 应该引导而不是代写
-- **只提供骨架**：创建文件时只提供空类/接口定义，不写具体实现
-- **解释概念**：用简单的比喻解释架构和设计模式
-- **回答问题**：耐心解答用户的疑问，引导用户思考
+[//]: # (- **用户是学习者**：这是用户的作业，AI 应该引导而不是代写)
+
+[//]: # (- **只提供骨架**：创建文件时只提供空类/接口定义，不写具体实现)
+
+[//]: # (- **解释概念**：用简单的比喻解释架构和设计模式)
+
+[//]: # (- **回答问题**：耐心解答用户的疑问，引导用户思考)
 
 ---
 
 ## 变更日志
 
 > **AI 提示**: 每次修改项目后，在此处添加记录，最新的放在最上面。
+
+### 2026-01-20 22:56 - 处理 Competitors 为空的结果记录
+
+- **修改文件**:
+  - `stage_2/src/DataCrawler/Result/ResultFormatter.java`
+- **修改内容**:
+  - 在 Competitors 不是数组时回退到 FullName/LastName/FirstName
+
+### 2026-01-20 22:47 - 项目名称改为官方格式
+
+- **修改文件**:
+  - `stage_2/src/Command/CommandParser.java`
+  - `stage_2/input.txt`
+- **修改内容**:
+  - 命令解析的有效项目名改为官方名称
+  - 示例输入同步更新为官方大小写
+
+### 2026-01-20 22:41 - 默认输入输出指向 stage_2
+
+- **修改文件**:
+  - `stage_2/src/DWASearch.java`
+- **修改内容**:
+  - 无参数时默认读取 `stage_2/input.txt` 并写入 `stage_2/output.txt`
+
+### 2026-01-20 22:36 - DWASearch 默认输入输出路径
+
+- **修改文件**:
+  - `stage_2/src/DWASearch.java`
+- **修改内容**:
+  - 当无参数时默认读取 `input.txt` 并写入 `output.txt`
+
+### 2026-01-20 22:34 - 完善入口与提供多组调度示例
+
+- **修改文件**:
+  - `stage_2/src/DWASearch.java`
+  - `stage_2/input_sample.txt`
+- **修改内容**:
+  - DWASearch 支持读取输入输出路径并写入结果
+  - 添加 7 行示例命令以覆盖多组调度场景
+
+### 2026-01-20 22:29 - CoreModule 组装调度流程
+
+- **修改文件**:
+  - `stage_2/src/core/CoreModule.java`
+- **修改内容**:
+  - 接入依赖分析与调度器执行
+  - 统一拼接输出字符串
+
+### 2026-01-20 22:25 - 查询门面调整为各自包与公共接口
+
+- **修改文件**:
+  - `stage_2/src/common/QueryService.java` - 查询接口移入 common
+  - `stage_2/src/DataCrawler/Athlete/AthleteQueryService.java` - 运动员门面移入 Athlete 包
+  - `stage_2/src/DataCrawler/Result/ResultQueryService.java` - 结果门面移入 Result 包
+  - `stage_2/src/scheduler/TaskScheduler.java` - 更新导入路径
+- **修改内容**:
+  - 将门面服务按领域放回各自包，接口放入公共包以降低耦合
+
+### 2026-01-20 22:20 - 简化事件映射构建
+
+- **修改文件**:
+  - `stage_2/src/DataCrawler/ResultQueryService.java`
+- **修改内容**:
+  - buildEventIdMap 直接返回爬虫映射结果
+
+### 2026-01-20 22:16 - 结果查询移除大小写归一化
+
+- **修改文件**:
+  - `stage_2/src/DataCrawler/ResultQueryService.java`
+- **修改内容**:
+  - 不再对项目名做小写归一化，按原始 key 匹配
+
+### 2026-01-20 22:03 - 结果映射下沉到爬虫层
+
+- **修改文件**:
+  - `stage_2/src/DataCrawler/Result/ResultCrawler.java`
+  - `stage_2/src/DataCrawler/ResultQueryService.java`
+- **修改内容**:
+  - 将 summary 解析与 eventId 映射逻辑迁移到 ResultCrawler
+  - 门面层仅做映射归一化与调用
+
+### 2026-01-20 21:37 - 精简防御性分支
+
+- **修改文件**:
+  - `stage_2/src/DataCrawler/AthleteQueryService.java`
+  - `stage_2/src/DataCrawler/ResultQueryService.java`
+  - `stage_2/src/scheduler/TaskScheduler.java`
+- **修改内容**:
+  - 移除多余的空值与边界校验，简化调度与查询流程
+  - 运行时异常改为直接抛出
+
+### 2026-01-20 21:12 - 新增查询门面与调度器解耦
+
+- **修改文件**:
+  - `stage_2/src/DataCrawler/QueryService.java` - 统一查询接口
+  - `stage_2/src/DataCrawler/AthleteQueryService.java` - 运动员查询实现
+  - `stage_2/src/DataCrawler/ResultQueryService.java` - 结果查询实现（含懒加载映射）
+  - `stage_2/src/scheduler/TaskScheduler.java` - 使用门面接口执行查询
+- **修改内容**:
+  - 引入统一查询门面，调度器只按项目名与 option 获取格式化输出
+  - 结果查询内部维护 event 映射与详情缓存
+
+### 2026-01-20 20:39 - 调度器运行时失败统一输出 Error
+
+- **修改文件**:
+  - `stage_2/src/scheduler/TaskScheduler.java`
+- **修改内容**:
+  - result 映射缺失时不再输出 N/A，统一按运行时错误处理
+
+### 2026-01-20 20:26 - 调度器事件缺失处理
+
+- **修改文件**:
+  - `stage_2/src/scheduler/TaskScheduler.java`
+- **修改内容**:
+  - summary 获取失败时统一输出 Error
+
+### 2026-01-20 20:25 - 调度器分组执行与事件映射
+
+- **修改文件**:
+  - `stage_2/src/scheduler/TaskGroup.java` - 增加任务列表访问
+  - `stage_2/src/scheduler/TaskScheduler.java` - 多线程分组执行与写回输出
+  - `stage_2/src/DataCrawler/Result/ResultCrawler.java` - 放开按 eventId 抓取接口
+- **修改内容**:
+  - TaskGroup 提供任务列表以便调度执行
+  - 调度器按组启动线程、抓取一次并回填输出数组
+  - 结果抓取支持 eventId 映射路径
+
+### 2026-01-20 15:54 - 新增多线程调度说明文档
+
+- **修改文件**:
+  - `stage_2/THREADING.md`
+- **修改内容**:
+  - 记录无缓存场景下的多线程分组执行框架与输出顺序策略
+
+### 2026-01-20 15:56 - 多线程说明文档改为中文
+
+- **修改文件**:
+  - `stage_2/THREADING.md`
+- **修改内容**:
+  - 将多线程执行框架说明改为中文版本
+
+### 2026-01-20 15:59 - 多线程说明更新为手动线程与单次 summary
+
+- **修改文件**:
+  - `stage_2/THREADING.md`
+- **修改内容**:
+  - 改为每组一个线程，主线程 join 等待
+  - 增加 result summary 只抓取一次并按 eventId 分组的说明
+
+### 2026-01-20 16:03 - 多线程示例补充男子项目
+
+- **修改文件**:
+  - `stage_2/THREADING.md`
+- **修改内容**:
+  - 示例中新增男子项目命令与分组
+
+### 2026-01-20 15:49 - 补充多线程调度框架说明
+
+- **修改文件**:
+  - `AI_PROJECT_CONTEXT.md`
+- **修改内容**:
+  - 新增调度器的多线程执行框架说明与分组示例
+
+### 2026-01-20 15:43 - CoreModule 增加命令到任务映射
+
+- **修改文件**:
+  - `stage_2/src/core/CoreModule.java` - 添加 Task 映射构建方法
+- **修改内容**:
+  - 在 CoreModule 中构建 Task 列表（players/result → key/option）
+  - 保留即时输出处理，未实现任务执行
+
+### 2026-01-20 15:26 - 命令即时输出与模块清理
+
+- **修改文件**:
+  - `stage_2/src/Command/Command.java` - 添加即时输出钩子
+  - `stage_2/src/Command/ErrorCommand.java` - 直接返回 Error 输出
+  - `stage_2/src/Command/ResultCommand.java` - 对 N/A 返回即时输出
+  - `stage_2/src/core/CoreModule.java` - 接入即时输出填充
+  - 删除 `stage_2/src/Command/CommandType.java`
+  - 删除 `stage_2/src/cache/CacheKey.java`
+  - 删除 `stage_2/src/cache/LRUCache.java`
+- **修改内容**:
+  - 将 Error/N/A 的输出判断下放到命令对象
+  - CoreModule 通过统一方法填充即时输出
+  - 移除不再使用的命令枚举和缓存模块
 
 ### 2026-01-19 - 完成接口层和业务层实现
 
