@@ -1,6 +1,7 @@
 package Command;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class CommandParser {
      */
     public List<Command> parse(String inputPath) throws IOException {
         // 1. 读取文件所有行
-        List<String> lines = Files.readAllLines(Paths.get(inputPath));
+        List<String> lines = Files.readAllLines(Paths.get(inputPath), StandardCharsets.UTF_8);
 
         // 2. 创建结果列表
         List<Command> commands = new ArrayList<>();
