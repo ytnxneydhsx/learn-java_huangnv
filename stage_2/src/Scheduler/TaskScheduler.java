@@ -39,7 +39,15 @@ public class TaskScheduler {
     }
 
     private void runAthletesGroup(TaskGroup group, String[] output) {
-        String result = athleteService.query(null, "");
+
+        String result ;
+        try {
+            result = athleteService.query(null, "");
+        } catch (Exception e) {
+            System.err.println("[ERROR] runAthletesGroup: " + e.getMessage());
+            e.printStackTrace();
+            result="网络不好 请求失败";
+        }
         for (Task task : group.getTasks()) {
             writeOutput(output, task.getLine(), result);
         }
@@ -49,7 +57,14 @@ public class TaskScheduler {
         String key = group.getName();
         String eventName = key.substring("EVENT:".length()).trim();
         for (Task task : group.getTasks()) {
-            String result = resultService.query(eventName, task.getOption());
+            String result ;
+            try {
+                result = resultService.query(eventName, task.getOption());
+            } catch (Exception e) {
+                System.err.println("[ERROR] runEventGroup: " + e.getMessage());
+                e.printStackTrace();
+                result="网络不好 请求失败";
+            }
             writeOutput(output, task.getLine(), result);
         }
     }
