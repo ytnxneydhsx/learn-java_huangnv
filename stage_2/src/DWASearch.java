@@ -1,4 +1,4 @@
-import core.CoreModule;
+import Core.CoreModule;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

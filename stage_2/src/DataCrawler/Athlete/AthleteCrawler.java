@@ -1,6 +1,6 @@
 package DataCrawler.Athlete;
 
-import common.DataFetcher;
+import Common.DataFetcher;
 
 import java.io.BufferedReader;
 import java.io.IOException;

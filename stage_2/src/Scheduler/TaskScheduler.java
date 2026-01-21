@@ -1,8 +1,8 @@
-package scheduler;
+package Scheduler;
 
 import DataCrawler.Athlete.AthleteQueryService;
 import DataCrawler.Result.ResultQueryService;
-import common.QueryService;
+import Common.QueryService;
 
 import java.util.ArrayList;
 import java.util.List;

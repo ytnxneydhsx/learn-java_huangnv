@@ -1,13 +1,13 @@
-package core;
+package Core;
 
 import Command.Command;
 import Command.CommandParser;
 import Command.PlayerCommand;
 import Command.ResultCommand;
-import scheduler.DependencyAnalyzer;
-import scheduler.Task;
-import scheduler.TaskGroup;
-import scheduler.TaskScheduler;
+import Scheduler.DependencyAnalyzer;
+import Scheduler.Task;
+import Scheduler.TaskGroup;
+import Scheduler.TaskScheduler;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,7 +24,6 @@ public class CoreModule {
              commands = commandParser.parse(inputPath);
             outStringarray = new String[commands.size()];
         } catch (IOException e) {
-            // 如果出错（比如找不到文件），会执行这里的代码
             e.printStackTrace();
             return "文件读取失败：" + e.getMessage();
         }

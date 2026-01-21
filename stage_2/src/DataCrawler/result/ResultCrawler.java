@@ -1,5 +1,5 @@
 package DataCrawler.Result;
-import  common.DataFetcher;
+import  Common.DataFetcher;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

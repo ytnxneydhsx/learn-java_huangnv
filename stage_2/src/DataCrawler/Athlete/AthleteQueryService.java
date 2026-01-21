@@ -1,6 +1,6 @@
 package DataCrawler.Athlete;
 
-import common.QueryService;
+import Common.QueryService;
 
 public class AthleteQueryService implements QueryService {
     private final AthleteCrawler crawler = new AthleteCrawler();

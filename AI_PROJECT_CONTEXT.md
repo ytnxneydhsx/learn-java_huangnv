@@ -36,7 +36,7 @@ learn-java_huangnv/
 │   └── src/
 │       ├── DWASearch.java           # 程序入口 (待实现)
 │       │
-│       ├── core/                    # [门面] 对外 API (待实现)
+│       ├── Core/                    # [门面] 对外 API (待实现)
 │       │   └── CoreModule.java
 │       │
 │       ├── command/                 # [横切] 命令解析 (待实现) ← 下一步
@@ -44,7 +44,7 @@ learn-java_huangnv/
 │       │   ├── CommandType.java
 │       │   └── CommandParser.java
 │       │
-│       ├── scheduler/               # [横切] 调度与依赖分析 (待实现)
+│       ├── Scheduler/               # [横切] 调度与依赖分析 (待实现)
 │       │   ├── DependencyAnalyzer.java
 │       │   ├── TaskScheduler.java
 │       │   └── TaskGroup.java
@@ -53,7 +53,7 @@ learn-java_huangnv/
 │       │   ├── CacheKey.java
 │       │   └── LRUCache.java
 │       │
-│       ├── common/                  # [公共] 接口定义 [已完成]
+│       ├── Common/                  # [公共] 接口定义 [已完成]
 │       │   ├── DataFetcher.java     # 接口: String fetch() throws IOException
 │       │   └── OutputFormatter.java # 接口: String format(String json, String option)
 │       │
@@ -79,9 +79,9 @@ learn-java_huangnv/
 #### 1. 架构设计 ✓
 
 设计了**混合架构**：
-- **横切层**（按职责分包）：command、scheduler、cache、core
+- **横切层**（按职责分包）：command、Scheduler、cache、Core
 - **业务层**（按域分包）：DataCrawler/Athlete、DataCrawler/Result
-- **公共接口**：common/ 连接横切层和业务层
+- **公共接口**：Common/ 连接横切层和业务层
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -90,18 +90,18 @@ learn-java_huangnv/
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                     core/CoreModule                         │
+│                     Core/CoreModule                         │
 │              execute(String cmd) 统一门面                    │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌──────────────┬──────────────┬──────────────┐
-│   command/   │  scheduler/  │    cache/    │  ← 横切层
+│   command/   │  Scheduler/  │    cache/    │  ← 横切层
 │  命令解析     │  依赖分析     │   LRU缓存    │
 │              │  多线程调度   │   (容量=3)   │
 └──────────────┴──────────────┴──────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                    common/ 公共接口                          │
+│                    Common/ 公共接口                          │
 │         DataFetcher (爬虫接口)  OutputFormatter (格式化接口)  │
 └─────────────────────────────────────────────────────────────┘
                               ↓
@@ -115,7 +115,7 @@ learn-java_huangnv/
 
 #### 2. 接口定义 ✓
 
-**DataFetcher 接口** (`common/DataFetcher.java`)：
+**DataFetcher 接口** (`Common/DataFetcher.java`)：
 ```java
 public interface DataFetcher {
     public String fetch() throws IOException;
@@ -124,7 +124,7 @@ public interface DataFetcher {
 - 职责：去 API 爬取数据，返回 JSON 字符串
 - 不关心数据怎么展示
 
-**OutputFormatter 接口** (`common/OutputFormatter.java`)：
+**OutputFormatter 接口** (`Common/OutputFormatter.java`)：
 ```java
 public interface OutputFormatter {
     public String format(String json, String option);
@@ -238,7 +238,7 @@ public interface OutputFormatter {
 - 继承 `LinkedHashMap`，容量为 3
 - 最近最少使用的自动淘汰
 
-#### 第三步：scheduler/ 调度模块
+#### 第三步：Scheduler/ 调度模块
 
 **DependencyAnalyzer.java**：
 - 分析命令列表，找出哪些命令共享同一数据源
@@ -252,7 +252,7 @@ public interface OutputFormatter {
 - 多线程执行不同的 TaskGroup
 - 保证输出按原始命令顺序
 
-#### 第四步：core/CoreModule.java
+#### 第四步：Core/CoreModule.java
 
 - 对外暴露 `execute(String cmd)` 和 `executeBatch(List<String> commands)`
 - 内部串联 CommandParser → DependencyAnalyzer → Cache → Fetcher → Formatter
@@ -366,8 +366,8 @@ players
 | 用途 | 文件路径 | 状态 |
 |------|----------|------|
 | **接口** | | |
-| DataFetcher | `stage_2/src/common/DataFetcher.java` | ✓ 已完成 |
-| OutputFormatter | `stage_2/src/common/OutputFormatter.java` | ✓ 已完成 |
+| DataFetcher | `stage_2/src/Common/DataFetcher.java` | ✓ 已完成 |
+| OutputFormatter | `stage_2/src/Common/OutputFormatter.java` | ✓ 已完成 |
 | **业务实现** | | |
 | 运动员爬虫 | `stage_2/src/DataCrawler/Athlete/AthleteCrawler.java` | ✓ 已完成 |
 | 运动员格式化 | `stage_2/src/DataCrawler/Athlete/AthleteFormatter.java` | ✓ 已完成 |
@@ -376,9 +376,9 @@ players
 | **横切模块** | | |
 | 命令解析 | `stage_2/src/command/` | 待实现 |
 | 缓存 | `stage_2/src/cache/` | 待实现 |
-| 调度器 | `stage_2/src/scheduler/` | 待实现 |
+| 调度器 | `stage_2/src/Scheduler/` | 待实现 |
 | **入口** | | |
-| CoreModule | `stage_2/src/core/CoreModule.java` | 待实现 |
+| CoreModule | `stage_2/src/Core/CoreModule.java` | 待实现 |
 | DWASearch | `stage_2/src/DWASearch.java` | 待实现 |
 
 ---
@@ -454,7 +454,7 @@ players
 ### 2026-01-20 22:29 - CoreModule 组装调度流程
 
 - **修改文件**:
-  - `stage_2/src/core/CoreModule.java`
+  - `stage_2/src/Core/CoreModule.java`
 - **修改内容**:
   - 接入依赖分析与调度器执行
   - 统一拼接输出字符串
@@ -462,10 +462,10 @@ players
 ### 2026-01-20 22:25 - 查询门面调整为各自包与公共接口
 
 - **修改文件**:
-  - `stage_2/src/common/QueryService.java` - 查询接口移入 common
+  - `stage_2/src/Common/QueryService.java` - 查询接口移入 Common
   - `stage_2/src/DataCrawler/Athlete/AthleteQueryService.java` - 运动员门面移入 Athlete 包
   - `stage_2/src/DataCrawler/Result/ResultQueryService.java` - 结果门面移入 Result 包
-  - `stage_2/src/scheduler/TaskScheduler.java` - 更新导入路径
+  - `stage_2/src/Scheduler/TaskScheduler.java` - 更新导入路径
 - **修改内容**:
   - 将门面服务按领域放回各自包，接口放入公共包以降低耦合
 
@@ -497,7 +497,7 @@ players
 - **修改文件**:
   - `stage_2/src/DataCrawler/AthleteQueryService.java`
   - `stage_2/src/DataCrawler/ResultQueryService.java`
-  - `stage_2/src/scheduler/TaskScheduler.java`
+  - `stage_2/src/Scheduler/TaskScheduler.java`
 - **修改内容**:
   - 移除多余的空值与边界校验，简化调度与查询流程
   - 运行时异常改为直接抛出
@@ -508,7 +508,7 @@ players
   - `stage_2/src/DataCrawler/QueryService.java` - 统一查询接口
   - `stage_2/src/DataCrawler/AthleteQueryService.java` - 运动员查询实现
   - `stage_2/src/DataCrawler/ResultQueryService.java` - 结果查询实现（含懒加载映射）
-  - `stage_2/src/scheduler/TaskScheduler.java` - 使用门面接口执行查询
+  - `stage_2/src/Scheduler/TaskScheduler.java` - 使用门面接口执行查询
 - **修改内容**:
   - 引入统一查询门面，调度器只按项目名与 option 获取格式化输出
   - 结果查询内部维护 event 映射与详情缓存
@@ -516,22 +516,22 @@ players
 ### 2026-01-20 20:39 - 调度器运行时失败统一输出 Error
 
 - **修改文件**:
-  - `stage_2/src/scheduler/TaskScheduler.java`
+  - `stage_2/src/Scheduler/TaskScheduler.java`
 - **修改内容**:
   - result 映射缺失时不再输出 N/A，统一按运行时错误处理
 
 ### 2026-01-20 20:26 - 调度器事件缺失处理
 
 - **修改文件**:
-  - `stage_2/src/scheduler/TaskScheduler.java`
+  - `stage_2/src/Scheduler/TaskScheduler.java`
 - **修改内容**:
   - summary 获取失败时统一输出 Error
 
 ### 2026-01-20 20:25 - 调度器分组执行与事件映射
 
 - **修改文件**:
-  - `stage_2/src/scheduler/TaskGroup.java` - 增加任务列表访问
-  - `stage_2/src/scheduler/TaskScheduler.java` - 多线程分组执行与写回输出
+  - `stage_2/src/Scheduler/TaskGroup.java` - 增加任务列表访问
+  - `stage_2/src/Scheduler/TaskScheduler.java` - 多线程分组执行与写回输出
   - `stage_2/src/DataCrawler/Result/ResultCrawler.java` - 放开按 eventId 抓取接口
 - **修改内容**:
   - TaskGroup 提供任务列表以便调度执行
@@ -577,7 +577,7 @@ players
 ### 2026-01-20 15:43 - CoreModule 增加命令到任务映射
 
 - **修改文件**:
-  - `stage_2/src/core/CoreModule.java` - 添加 Task 映射构建方法
+  - `stage_2/src/Core/CoreModule.java` - 添加 Task 映射构建方法
 - **修改内容**:
   - 在 CoreModule 中构建 Task 列表（players/result → key/option）
   - 保留即时输出处理，未实现任务执行
@@ -588,7 +588,7 @@ players
   - `stage_2/src/Command/Command.java` - 添加即时输出钩子
   - `stage_2/src/Command/ErrorCommand.java` - 直接返回 Error 输出
   - `stage_2/src/Command/ResultCommand.java` - 对 N/A 返回即时输出
-  - `stage_2/src/core/CoreModule.java` - 接入即时输出填充
+  - `stage_2/src/Core/CoreModule.java` - 接入即时输出填充
   - 删除 `stage_2/src/Command/CommandType.java`
   - 删除 `stage_2/src/cache/CacheKey.java`
   - 删除 `stage_2/src/cache/LRUCache.java`
@@ -600,8 +600,8 @@ players
 ### 2026-01-19 - 完成接口层和业务层实现
 
 - **修改文件**:
-  - `common/DataFetcher.java` - 定义接口
-  - `common/OutputFormatter.java` - 定义接口
+  - `Common/DataFetcher.java` - 定义接口
+  - `Common/OutputFormatter.java` - 定义接口
   - `DataCrawler/Athlete/AthleteCrawler.java` - 实现 DataFetcher
   - `DataCrawler/Athlete/AthleteFormatter.java` - 实现 OutputFormatter
   - `DataCrawler/Result/ResultCrawler.java` - 实现 DataFetcher
@@ -624,11 +624,11 @@ players
   - 更新 `AI_PROJECT_CONTEXT.md`
   - 新建 `stage_2/src/` 下的目录和文件结构
 - **修改内容**:
-  - 设计混合架构：横切层（command/scheduler/cache）+ 业务层（DataCrawler）
+  - 设计混合架构：横切层（command/Scheduler/cache）+ 业务层（DataCrawler）
   - 创建空文件结构，待填充代码
 - **架构决策**:
   - 对外 API 只暴露 `CoreModule.execute(String cmd)`，内部自动解析路由
-  - 通过 `common/` 包的接口连接横切层和业务层
+  - 通过 `Common/` 包的接口连接横切层和业务层
   - 新增业务只需新建包并实现接口
 
 ### 2026-01-19 - 初始化 AI 上下文文档
@@ -646,8 +646,8 @@ players
 
 > 按优先级排序
 
-- [x] 定义 `common/DataFetcher.java` 接口
-- [x] 定义 `common/OutputFormatter.java` 接口
+- [x] 定义 `Common/DataFetcher.java` 接口
+- [x] 定义 `Common/OutputFormatter.java` 接口
 - [x] `AthleteCrawler` 实现 `DataFetcher`
 - [x] `AthleteFormatter` 实现 `OutputFormatter`
 - [x] `ResultCrawler` 实现 `DataFetcher`
@@ -658,10 +658,10 @@ players
 - [ ] **实现 `command/CommandParser.java` 解析逻辑**
 - [ ] 实现 `cache/CacheKey.java`
 - [ ] 实现 `cache/LRUCache.java`
-- [ ] 实现 `scheduler/DependencyAnalyzer.java`
-- [ ] 实现 `scheduler/TaskGroup.java`
-- [ ] 实现 `scheduler/TaskScheduler.java`
-- [ ] 实现 `core/CoreModule.java`
+- [ ] 实现 `Scheduler/DependencyAnalyzer.java`
+- [ ] 实现 `Scheduler/TaskGroup.java`
+- [ ] 实现 `Scheduler/TaskScheduler.java`
+- [ ] 实现 `Core/CoreModule.java`
 - [ ] 实现 `DWASearch.java`
 - [ ] 编写至少 10 个单元测试
 - [ ] 打包成 `DWASearch.jar`

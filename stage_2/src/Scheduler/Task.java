@@ -1,4 +1,4 @@
-package scheduler;
+package Scheduler;
 
 public class Task {
     private int  line;

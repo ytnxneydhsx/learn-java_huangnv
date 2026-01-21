@@ -14,29 +14,29 @@
 - **API 地址**: `https://api.worldaquatics.com/fina/competitions/3337/events`
 - **过程**: `events_api_discovery.png` 展示了在 Result 首页通过 JS 调用发现该 API 网址的过程。
 
-![发现接口地址](img/events_api_discovery.png)
+![发现接口地址](Img/events_api_discovery.png)
 
 直接访问该 API 网址，我们可以得到完整的 JSON 信息（如 `events_list_json.png` 所示）。在该数据中，每个项目（如 `Women 1m Springboard`）都对应一个唯一的 `Id`，这是后续抓取详细成绩的关键钥匙。
 
-![接口返回的 JSON 列表](img/events_list_json.png)
+![接口返回的 JSON 列表](Img/events_list_json.png)
 
 ### 3. 定位具体比赛项目详情
 当我们在网页上点击具体的比赛项目时，JS 会携带第一步中获得的资源 ID，发起第二次 API 请求。
 - **详情接口**: `https://api.worldaquatics.com/fina/events/{EventId}`
 - **过程**: `event_details_api_discovery.png` 记录了点击项目后触发的第二次 JS 调用及其对应的详情 API 地址。
 
-![点击项目触发二次调用](img/event_details_api_discovery.png)
+![点击项目触发二次调用](Img/event_details_api_discovery.png)
 
 访问该详情 API，即可获得如 `event_details_json.png` 所示的详细比赛数据。该 JSON 结构包含了所有的 `Heats`（初赛、半决赛、决赛）以及选手的每一跳得分、总分和最终排名。
 
-![详细比赛成绩 JSON](img/event_details_json.png)
+![详细比赛成绩 JSON](Img/event_details_json.png)
 
 ### 4. 获取所有运动员信息
 与赛事结果不同，运动员信息的获取更为直接。通过分析运动员列表页的 XHR 请求（如 `athletes_list_xhr.png` 所示），我们发现服务器会一次性返回参与该次锦标赛的所有运动员及其所属国家的结构化 JSON 数据。
 - **运动员接口**: `https://api.worldaquatics.com/fina/competitions/3337/athletes?gender=&countryId=`
 - **特点**: 无需像赛事结果那样进行二次跳转或动态加载，单次请求即可获取完整名录，这极大地方便了数据的同步与持久化。
 
-![运动员信息一次性抓取](img/athletes_list_xhr.png)
+![运动员信息一次性抓取](Img/athletes_list_xhr.png)
 
 ### 5. 爬虫代码实现逻辑
 基于上述逆向分析出的请求逻辑，我在 `DataCrawler` 模块中实现了对应的自动化抓取流程：

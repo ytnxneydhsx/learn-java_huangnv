@@ -1,6 +1,6 @@
 package DataCrawler.Result;
 
-import common.QueryService;
+import Common.QueryService;
 
 import java.io.IOException;
 import java.util.Map;

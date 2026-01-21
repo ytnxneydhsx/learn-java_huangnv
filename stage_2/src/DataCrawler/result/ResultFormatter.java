@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import  common.OutputFormatter;
+import  Common.OutputFormatter;
 
 public class ResultFormatter implements OutputFormatter{
 
