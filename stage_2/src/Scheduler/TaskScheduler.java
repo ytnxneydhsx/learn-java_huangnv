@@ -9,8 +9,17 @@ import java.util.List;
 import java.util.Map;
 
 public class TaskScheduler {
-    private final QueryService athleteService = new AthleteQueryService();
-    private final QueryService resultService = new ResultQueryService();
+    private final QueryService athleteService;
+    private final QueryService resultService;
+
+    public TaskScheduler() {
+        this(new AthleteQueryService(), new ResultQueryService());
+    }
+
+    public TaskScheduler(QueryService athleteService, QueryService resultService) {
+        this.athleteService = athleteService;
+        this.resultService = resultService;
+    }
 
     public void execute(Map<String, TaskGroup> groups, String[] output) {
         List<Thread> threads = new ArrayList<>();

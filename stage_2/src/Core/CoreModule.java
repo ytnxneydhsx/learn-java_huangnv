@@ -16,10 +16,17 @@ import java.util.List;
 import java.util.Map;
 
 public class CoreModule {
+    private final CommandParser commandParser;
+    private final TaskScheduler scheduler;
+
+    public CoreModule(CommandParser commandParser, TaskScheduler scheduler) {
+        this.commandParser = commandParser;
+        this.scheduler = scheduler;
+    }
+
     public String getOutString(String inputPath) {
         String[] outStringarray = null;
         List<Command> commands = null;
-        CommandParser commandParser = new CommandParser();
         try {
              commands = commandParser.parse(inputPath);
             outStringarray = new String[commands.size()];
@@ -33,7 +40,6 @@ public class CoreModule {
         if (!tasks.isEmpty()) {
             DependencyAnalyzer analyzer = new DependencyAnalyzer();
             Map<String, TaskGroup> groups = analyzer.analyze(tasks);
-            TaskScheduler scheduler = new TaskScheduler();
             scheduler.execute(groups, outStringarray);
         }
         return mergeOutputs(outStringarray);
@@ -75,6 +81,4 @@ public class CoreModule {
         return sb.toString();
     }
 }
-
-
 
